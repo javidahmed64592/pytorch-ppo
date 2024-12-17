@@ -5,9 +5,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "template-python"
+name = "pytorch-ppo"
 version = "1.0.0"
-description = "An example pyproject.toml."
+description = "Proximal policy optimisation using PyTorch in Python."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
@@ -20,21 +20,23 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
-    "numpy",
+    "numpy==1.26.3",
+    "torch==2.5.1",
+    "torchaudio==2.5.1",
+    "torchvision==0.20.1",
+    "gym==0.26.2",
 ]
 
 [project.optional-dependencies]
 dev = [
     "ruff",
-]
-
-test = [
     "pytest",
     "pytest-cov",
+    "matplotlib",
 ]
 
 [project.urls]
-repository = "https://github.com/javidahmed64592/template-python"
+repository = "https://github.com/javidahmed64592/pytorch-ppo"
 
 [tool.pytest.ini_options]
 addopts = [
@@ -77,7 +79,6 @@ exclude = [
     "venv",
 ]
 
-
 [tool.ruff.lint]
 select = [
     "ANN",
@@ -104,7 +105,7 @@ select = [
     "W",
     "YTT",
 ]
-ignore = ["ANN101", "ANN102", "E501","E741","ISC001","N999"]
+ignore = ["E501", "FBT001"]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
