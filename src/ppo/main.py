@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ppo.agent import Agent
+from ppo.ppo_types import AgentType
 
 
 def plot_learning_curve(x: list[float], scores: list[float], figure_file: str) -> None:
@@ -16,16 +17,21 @@ def plot_learning_curve(x: list[float], scores: list[float], figure_file: str) -
 
 if __name__ == "__main__":
     env = gym.make("CartPole-v0")
-    max_steps = 20
 
-    alpha = 3e-4
-    gamma = 0.99
-    gae_lambda = 0.95
-    policy_clip = 0.2
-    batch_size = 5
-    n_epochs = 4
+    agent_config = AgentType(
+        input_dims=env.observation_space.shape,
+        n_actions=env.action_space.n,
+        alpha=3e-4,
+        gamma=0.99,
+        gae_lambda=0.95,
+        policy_clip=0.2,
+        batch_size=5,
+        n_epochs=4,
+    )
+    agent = Agent(agent_config)
 
     n_games = 100
+    max_steps = 20
     figure_file = "cartpole.png"
     best_score = env.reward_range[0]
     score_history = []
@@ -33,17 +39,6 @@ if __name__ == "__main__":
     learn_iters = 0
     avg_score = 0
     n_steps = 0
-
-    agent = Agent(
-        input_dims=env.observation_space.shape,
-        n_actions=env.action_space.n,
-        alpha=alpha,
-        gamma=gamma,
-        gae_lambda=gae_lambda,
-        policy_clip=policy_clip,
-        batch_size=batch_size,
-        n_epochs=n_epochs,
-    )
 
     for i in range(n_games):
         observation, _ = env.reset()

@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from pydantic.dataclasses import dataclass
 
 from ppo.networks import ActorNetwork, CriticNetwork
-from ppo.ppo_types import ActorNetworkType, CriticNetworkType
+from ppo.ppo_types import ActorNetworkType, AgentType, CriticNetworkType
 
 rng = np.random.default_rng()
 
@@ -58,29 +58,19 @@ class PPOMemory:
 
 
 class Agent:
-    def __init__(
-        self,
-        input_dims: tuple[int],
-        n_actions: int,
-        alpha: float,
-        gamma: float,
-        gae_lambda: float,
-        policy_clip: float,
-        batch_size: int,
-        n_epochs: int,
-    ) -> None:
-        self.gamma = gamma
-        self.gae_lambda = gae_lambda
-        self.policy_clip = policy_clip
-        self.batch_size = batch_size
-        self.n_epochs = n_epochs
+    def __init__(self, config: AgentType) -> None:
+        self.gamma = config.gamma
+        self.gae_lambda = config.gae_lambda
+        self.policy_clip = config.policy_clip
+        self.batch_size = config.batch_size
+        self.n_epochs = config.n_epochs
 
-        actor_config = ActorNetworkType("models", "actor", input_dims, n_actions, 256, 256, alpha)
-        critic_config = CriticNetworkType("models", "critic", input_dims, 256, 256, alpha)
+        actor_config = ActorNetworkType("models", "actor", config.input_dims, config.n_actions, 256, 256, config.alpha)
+        critic_config = CriticNetworkType("models", "critic", config.input_dims, 256, 256, config.alpha)
 
         self.actor = ActorNetwork(actor_config)
         self.critic = CriticNetwork(critic_config)
-        self.memory = PPOMemory(batch_size)
+        self.memory = PPOMemory(config.batch_size)
 
     def remember(
         self, state: list[float], action: list[float], reward: float, probs: list[float], vals: list[float], done: bool

@@ -22,3 +22,15 @@ class CriticNetworkType(BaseNetworkType):
     fc1_dims: int
     fc2_dims: int
     alpha: float
+
+
+@dataclass
+class AgentType:
+    input_dims: tuple[int]
+    n_actions: int
+    alpha: float
+    gamma: float
+    gae_lambda: float
+    policy_clip: float
+    batch_size: int
+    n_epochs: int
