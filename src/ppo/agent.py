@@ -103,14 +103,6 @@ class Agent:
         value = torch.squeeze(value).item()
         return action, probs, value
 
-    def backpropagate_loss(self, actor_loss: torch.Tensor, critic_loss: torch.Tensor) -> None:
-        total_loss = actor_loss + (0.5 * critic_loss)
-        self.actor.optimizer.zero_grad()
-        self.critic.optimizer.zero_grad()
-        total_loss.backward()
-        self.actor.optimizer.step()
-        self.critic.optimizer.step()
-
     def learn(self) -> None:
         for _ in range(self.n_epochs):
             (
@@ -163,3 +155,11 @@ class Agent:
         weighted_probs = advantage * prob_ratio
         weighted_clipped_probs = torch.clamp(prob_ratio, 1 - self.policy_clip, 1 + self.policy_clip) * advantage
         return weighted_probs, weighted_clipped_probs
+
+    def backpropagate_loss(self, actor_loss: torch.Tensor, critic_loss: torch.Tensor) -> None:
+        total_loss = actor_loss + (0.5 * critic_loss)
+        self.actor.optimizer.zero_grad()
+        self.critic.optimizer.zero_grad()
+        total_loss.backward()
+        self.actor.optimizer.step()
+        self.critic.optimizer.step()
