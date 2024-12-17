@@ -46,6 +46,10 @@ class ActorNetwork(BaseNetwork):
         dist = self.nn(state)
         return Categorical(dist)
 
+    def calculate_loss(self, weighted_probs: torch.Tensor, weighted_clipped_probs: torch.Tensor) -> torch.Tensor:
+        loss = -torch.min(weighted_probs, weighted_clipped_probs)
+        return loss.mean()
+
 
 class CriticNetwork(BaseNetwork):
     def __init__(
@@ -57,7 +61,7 @@ class CriticNetwork(BaseNetwork):
         models_dir: str,
     ) -> None:
         super().__init__(models_dir)
-        self.nn = self.critic = nn.Sequential(
+        self.nn = nn.Sequential(
             nn.Linear(*num_inputs, fc1_dims),
             nn.ReLU(),
             nn.Linear(fc1_dims, fc2_dims),
@@ -71,3 +75,8 @@ class CriticNetwork(BaseNetwork):
 
     def forward(self, state: list[float]) -> Categorical:
         return self.nn(state)
+
+    def calculate_loss(self, states: torch.Tensor, returns: torch.Tensor) -> torch.Tensor:
+        value = torch.squeeze(self(states))
+        loss = (returns - value) ** 2
+        return loss.mean()

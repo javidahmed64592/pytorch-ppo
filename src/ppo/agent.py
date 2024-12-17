@@ -131,13 +131,11 @@ class Agent:
 
             for batch in batches:
                 states = torch.tensor(state_arr[batch], dtype=torch.float).to(self.actor.device)
-                old_probs = torch.tensor(old_probs_arr[batch]).to(self.actor.device)
                 actions = torch.tensor(action_arr[batch]).to(self.actor.device)
+                old_probs = torch.tensor(old_probs_arr[batch]).to(self.actor.device)
+                returns = advantage[batch] + values[batch]
 
                 dist = self.actor(states)
-                critic_value = self.critic(states)
-                critic_value = torch.squeeze(critic_value)
-
                 new_probs = dist.log_prob(actions)
                 prob_ratio = new_probs.exp() / old_probs.exp()
 
@@ -146,11 +144,8 @@ class Agent:
                     torch.clamp(prob_ratio, 1 - self.policy_clip, 1 + self.policy_clip) * advantage[batch]
                 )
 
-                actor_loss = -torch.min(weighted_probs, weighted_clipped_probs).mean()
-                returns = advantage[batch] + values[batch]
-
-                critic_loss = (returns - critic_value) ** 2
-                critic_loss = critic_loss.mean()
+                actor_loss = self.actor.calculate_loss(weighted_probs, weighted_clipped_probs)
+                critic_loss = self.critic.calculate_loss(states, returns)
 
                 self.backpropagate_loss(actor_loss, critic_loss)
 
