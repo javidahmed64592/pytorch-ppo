@@ -25,6 +25,7 @@ dependencies = [
     "torchaudio==2.5.1",
     "torchvision==0.20.1",
     "gym==0.26.2",
+    "pydantic",
 ]
 
 [project.optional-dependencies]

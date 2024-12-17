@@ -1,21 +1,29 @@
+from typing import ClassVar
+
 import numpy as np
 import torch
 from numpy.typing import NDArray
+from pydantic.dataclasses import dataclass
 
 from ppo.networks import ActorNetwork, CriticNetwork
 
 rng = np.random.default_rng()
 
 
+@dataclass
 class PPOMemory:
-    def __init__(self, batch_size: int) -> None:
-        self.clear_memory()
-        self.batch_size = batch_size
+    batch_size: int
+    states: ClassVar[list[list[float]]] = []
+    actions: ClassVar[list[list[float]]] = []
+    rewards: ClassVar[list[float]] = []
+    probs: ClassVar[list[list[float]]] = []
+    vals: ClassVar[list[list[float]]] = []
+    dones: ClassVar[list[int]] = []
 
     def generate_batches(self) -> tuple[NDArray]:
         n_states = len(self.states)
         batch_start = np.arange(0, n_states, self.batch_size)
-        indices = np.arange(n_states, dtype=np.int8)
+        indices = np.arange(n_states)
         rng.shuffle(indices)
         batches = [indices[i : i + self.batch_size] for i in batch_start]
 
@@ -40,12 +48,12 @@ class PPOMemory:
         self.dones.append(done)
 
     def clear_memory(self) -> None:
-        self.states = []
-        self.actions = []
-        self.rewards = []
-        self.probs = []
-        self.vals = []
-        self.dones = []
+        self.states.clear()
+        self.actions.clear()
+        self.rewards.clear()
+        self.probs.clear()
+        self.vals.clear()
+        self.dones.clear()
 
 
 class Agent:
