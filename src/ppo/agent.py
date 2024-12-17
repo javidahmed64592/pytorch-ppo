@@ -6,6 +6,7 @@ from numpy.typing import NDArray
 from pydantic.dataclasses import dataclass
 
 from ppo.networks import ActorNetwork, CriticNetwork
+from ppo.ppo_types import ActorNetworkType, CriticNetworkType
 
 rng = np.random.default_rng()
 
@@ -74,8 +75,11 @@ class Agent:
         self.batch_size = batch_size
         self.n_epochs = n_epochs
 
-        self.actor = ActorNetwork(input_dims, n_actions, 256, 256, alpha, "models")
-        self.critic = CriticNetwork(input_dims, 256, 256, alpha, "models")
+        actor_config = ActorNetworkType("models", "actor", input_dims, n_actions, 256, 256, alpha)
+        critic_config = CriticNetworkType("models", "critic", input_dims, 256, 256, alpha)
+
+        self.actor = ActorNetwork(actor_config)
+        self.critic = CriticNetwork(critic_config)
         self.memory = PPOMemory(batch_size)
 
     def remember(
