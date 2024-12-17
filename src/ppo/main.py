@@ -51,14 +51,14 @@ if __name__ == "__main__":
         score = 0
         while not done:
             action, prob, val = agent.choose_action(observation)
-            observation_, reward, done, truncated, _ = env.step(action)
+            next_observation, reward, done, _, _ = env.step(action)
             n_steps += 1
             score += reward
             agent.remember(observation, action, reward, prob, val, done)
             if n_steps % max_steps == 0:
                 agent.learn()
                 learn_iters += 1
-            observation = observation_
+            observation = next_observation
         score_history.append(score)
         avg_score = np.mean(score_history[-100:])
 
