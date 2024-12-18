@@ -3,7 +3,7 @@ from ppo.ppo_types import AgentType
 from ppo.simulation import Simulation
 
 if __name__ == "__main__":
-    simulation = Simulation("CartPole-v0", n_games=100, max_steps=20)
+    simulation = Simulation("CartPole-v1", n_games=100, max_steps=20)
 
     agent_config = AgentType(
         input_dims=simulation.env.observation_space.shape,
