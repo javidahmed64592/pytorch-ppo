@@ -86,7 +86,7 @@ class Agent:
         self.critic.load_checkpoint()
 
     def choose_action(self, observation: list[float]) -> list[float]:
-        state = torch.tensor([observation], dtype=torch.float).to(self.actor.device)
+        state = torch.tensor([observation]).to(self.actor.device)
         dist = self.actor(state)
         action = dist.sample()
         probs = dist.log_prob(action)
@@ -113,7 +113,7 @@ class Agent:
             values = torch.tensor(vals_arr).to(self.actor.device)
 
             for batch in batches:
-                states = torch.tensor(state_arr[batch], dtype=torch.float).to(self.actor.device)
+                states = torch.tensor(state_arr[batch]).to(self.actor.device)
                 actions = torch.tensor(action_arr[batch]).to(self.actor.device)
                 old_probs = torch.tensor(old_probs_arr[batch]).to(self.actor.device)
                 returns = advantage[batch] + values[batch]
@@ -129,7 +129,7 @@ class Agent:
         self.memory.clear_memory()
 
     def calculate_advantage(self, reward_arr: NDArray, vals_arr: NDArray, done_arr: NDArray) -> NDArray:
-        advantage = np.zeros(len(reward_arr), dtype=np.float32)
+        advantage = np.zeros(len(reward_arr))
         for t in range(len(reward_arr) - 1):
             discount = 1
             a_t = 0
