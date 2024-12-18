@@ -3,25 +3,34 @@ from pydantic.dataclasses import dataclass
 
 @dataclass
 class BaseNetworkType:
-    models_dir: str
-    name: str
+    alpha: float
+    num_inputs: tuple[int]
+    fc1_dims: int
+    fc2_dims: int
+
+    @property
+    def models_dir(self) -> str:
+        return "models"
+
+    @property
+    def name(self) -> str:
+        return "base"
 
 
 @dataclass
 class ActorNetworkType(BaseNetworkType):
-    num_inputs: tuple[int]
     num_outputs: int
-    fc1_dims: int
-    fc2_dims: int
-    alpha: float
+
+    @property
+    def name(self) -> str:
+        return "agent"
 
 
 @dataclass
 class CriticNetworkType(BaseNetworkType):
-    num_inputs: tuple[int]
-    fc1_dims: int
-    fc2_dims: int
-    alpha: float
+    @property
+    def name(self) -> str:
+        return "critic"
 
 
 @dataclass

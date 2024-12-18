@@ -65,8 +65,8 @@ class Agent:
         self.batch_size = config.batch_size
         self.n_epochs = config.n_epochs
 
-        actor_config = ActorNetworkType("models", "actor", config.input_dims, config.n_actions, 256, 256, config.alpha)
-        critic_config = CriticNetworkType("models", "critic", config.input_dims, 256, 256, config.alpha)
+        actor_config = ActorNetworkType(config.alpha, config.input_dims, 256, 256, config.n_actions)
+        critic_config = CriticNetworkType(config.alpha, config.input_dims, 256, 256)
 
         self.actor = ActorNetwork(actor_config)
         self.critic = CriticNetwork(critic_config)
