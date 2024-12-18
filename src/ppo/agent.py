@@ -108,18 +108,7 @@ class Agent:
                 done_arr,
                 batches,
             ) = self.memory.generate_batches()
-            advantage = np.zeros(len(reward_arr), dtype=np.float32)
-
-            for t in range(len(reward_arr) - 1):
-                discount = 1
-                a_t = 0
-                for k in range(t, len(reward_arr) - 1):
-                    a_t += discount * (
-                        reward_arr[k] + self.gamma * vals_arr[k + 1] * (1 - int(done_arr[k])) - vals_arr[k]
-                    )
-                    discount *= self.gamma * self.gae_lambda
-                advantage[t] = a_t
-
+            advantage = self.calculate_advantage(reward_arr, vals_arr, done_arr)
             advantage = torch.tensor(advantage).to(self.actor.device)
             values = torch.tensor(vals_arr).to(self.actor.device)
 
@@ -138,6 +127,18 @@ class Agent:
                 self.backpropagate_loss(actor_loss, critic_loss)
 
         self.memory.clear_memory()
+
+    def calculate_advantage(self, reward_arr: NDArray, vals_arr: NDArray, done_arr: NDArray) -> NDArray:
+        advantage = np.zeros(len(reward_arr), dtype=np.float32)
+        for t in range(len(reward_arr) - 1):
+            discount = 1
+            a_t = 0
+            for k in range(t, len(reward_arr) - 1):
+                a_t += discount * (reward_arr[k] + self.gamma * vals_arr[k + 1] * (1 - int(done_arr[k])) - vals_arr[k])
+                discount *= self.gamma * self.gae_lambda
+            advantage[t] = a_t
+
+        return advantage
 
     def calculate_prob_ratio(
         self, states: torch.Tensor, actions: torch.Tensor, old_probs: torch.Tensor
