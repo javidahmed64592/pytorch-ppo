@@ -19,7 +19,7 @@ class PPOMemory:
     rewards: ClassVar[list[float]] = []
     probs: ClassVar[list[list[float]]] = []
     vals: ClassVar[list[list[float]]] = []
-    dones: ClassVar[list[int]] = []
+    dones: ClassVar[list[bool]] = []
 
     def generate_batches(self) -> tuple[NDArray]:
         n_states = len(self.states)
