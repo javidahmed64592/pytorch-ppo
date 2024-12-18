@@ -16,4 +16,4 @@ if __name__ == "__main__":
         n_epochs=4,
     )
     agent = Agent(agent_config)
-    simulation.game_loop(agent)
+    simulation.run(agent)
