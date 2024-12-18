@@ -1,8 +1,13 @@
+import logging
+
 import gymnasium as gym
 import numpy as np
 import torch
 
 from ppo.agent import Agent
+
+logging.basicConfig(format="[%(asctime)s] - %(message)s", datefmt="%d/%m/%Y | %H:%M", level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class Simulation:
@@ -45,6 +50,6 @@ class Simulation:
                 best_score = avg_score
                 agent.save_models()
 
-            print(f"Episode {i} | Score: {score:.1f}, Average: {avg_score:.1f}")
+            logger.info(f"Episode {i}: \tScore {score:.1f} \t| Average {avg_score:.1f}")
 
         self.env.close()
