@@ -129,10 +129,7 @@ class Agent:
                 old_probs = torch.tensor(old_probs_arr[batch]).to(self.actor.device)
                 returns = advantage[batch] + values[batch]
 
-                dist = self.actor(states)
-                new_probs = dist.log_prob(actions)
-                prob_ratio = self.calculate_prob_ratio(old_probs, new_probs)
-
+                prob_ratio = self.calculate_prob_ratio(states, actions, old_probs)
                 weighted_probs, weighted_clipped_probs = self.calculate_weighted_probs(advantage[batch], prob_ratio)
 
                 actor_loss = self.actor.calculate_loss(weighted_probs, weighted_clipped_probs)
@@ -142,7 +139,11 @@ class Agent:
 
         self.memory.clear_memory()
 
-    def calculate_prob_ratio(self, old_probs: torch.Tensor, new_probs: torch.Tensor) -> torch.Tensor:
+    def calculate_prob_ratio(
+        self, states: torch.Tensor, actions: torch.Tensor, old_probs: torch.Tensor
+    ) -> torch.Tensor:
+        dist = self.actor(states)
+        new_probs = dist.log_prob(actions)
         return new_probs.exp() / old_probs.exp()
 
     def calculate_weighted_probs(self, advantage: torch.Tensor, prob_ratio: torch.Tensor) -> torch.Tensor:
