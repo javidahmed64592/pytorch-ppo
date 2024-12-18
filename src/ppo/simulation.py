@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 import torch
 
@@ -34,7 +34,7 @@ class Simulation:
     def run(self, agent: Agent) -> None:
         score_history = []
         avg_score = 0
-        best_score = self.env.reward_range[0]
+        best_score = 0
 
         for i in range(self.n_games):
             score = self.game_loop(agent)
