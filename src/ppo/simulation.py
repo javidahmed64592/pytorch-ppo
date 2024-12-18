@@ -46,3 +46,5 @@ class Simulation:
                 agent.save_models()
 
             print(f"Episode {i} | Score: {score:.1f}, Average: {avg_score:.1f}")
+
+        self.env.close()
