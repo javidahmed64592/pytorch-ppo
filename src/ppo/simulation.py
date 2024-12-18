@@ -7,7 +7,7 @@ from ppo.agent import Agent
 
 class Simulation:
     def __init__(self, id: str, n_games: int, max_steps: int) -> None:
-        self.env = gym.make(id)
+        self.env = gym.make(id, render_mode="human")
         self.n_games = n_games
         self.max_steps = max_steps
         self.timesteps = 0
