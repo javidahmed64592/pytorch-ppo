@@ -25,7 +25,7 @@ class Simulation:
             next_observation, reward, done = self.step(action)
             self.timesteps += 1
             score += reward
-            agent.remember(observation, action, reward, prob, val, done)
+            agent.memory.store_memory(observation, action, reward, prob, val, done)
             if self.timesteps % self.max_steps == 0:
                 agent.learn()
             observation = next_observation

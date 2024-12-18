@@ -72,11 +72,6 @@ class Agent:
         self.critic = CriticNetwork(critic_config)
         self.memory = PPOMemory(config.batch_size)
 
-    def remember(
-        self, state: list[float], action: list[float], reward: float, probs: list[float], vals: list[float], done: bool
-    ) -> None:
-        self.memory.store_memory(state, action, reward, probs, vals, done)
-
     def save_models(self) -> None:
         self.actor.save_checkpoint()
         self.critic.save_checkpoint()
