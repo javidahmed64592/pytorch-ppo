@@ -18,16 +18,17 @@ class Simulation:
         self.timesteps = 0
 
     def step(self, action: torch.Tensor) -> tuple[float, float, bool]:
-        next_observation, reward, done, _, _ = self.env.step(action)
-        return next_observation, reward, done
+        next_observation, reward, done, truncated, _ = self.env.step(action)
+        return next_observation, reward, done, truncated
 
     def game_loop(self, agent: Agent) -> None:
         observation, _ = self.env.reset()
         done = False
+        truncated = False
         score = 0
-        while not done:
+        while not (done or truncated):
             action, prob, val = agent.choose_action(observation)
-            next_observation, reward, done = self.step(action)
+            next_observation, reward, done, truncated = self.step(action)
             self.timesteps += 1
             score += reward
             agent.memory.store_memory(observation, action, reward, prob, val, done)
