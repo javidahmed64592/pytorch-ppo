@@ -6,7 +6,10 @@ from ppo.simulation import Simulation
 
 if __name__ == "__main__":
     simulation = Simulation("CartPole-v1", n_games=100, max_steps=20)
-    num_inputs = int(np.prod(simulation.env.observation_space.shape))
+    try:
+        num_inputs = int(np.prod(simulation.env.observation_space.shape))
+    except TypeError:
+        num_inputs = len(simulation.env.observation_space)
     num_actions = simulation.env.action_space.n
 
     agent_config = AgentType(
