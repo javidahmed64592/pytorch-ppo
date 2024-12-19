@@ -5,8 +5,7 @@ from pydantic.dataclasses import dataclass
 class BaseNetworkType:
     alpha: float
     num_inputs: int
-    fc1_dims: int
-    fc2_dims: int
+    hidden_layer_sizes: list[int]
 
     @property
     def models_dir(self) -> str:

@@ -22,15 +22,21 @@ class BaseNetwork(nn.Module):
     def linear_input_layer(self, num_inputs: int, fc1_dims: int) -> tuple[nn.Linear, nn.ReLU]:
         return nn.Linear(num_inputs, fc1_dims), nn.ReLU()
 
+    def linear_hidden_layers(self, hidden_layer_sizes: list[int]) -> list[nn.Linear]:
+        layers = []
+        for i in range(len(hidden_layer_sizes) - 1):
+            layers.append(nn.Linear(hidden_layer_sizes[i], hidden_layer_sizes[i + 1]))
+            layers.append(nn.ReLU())
+        return layers
+
 
 class ActorNetwork(BaseNetwork):
     def __init__(self, config: ActorNetworkType) -> None:
         super().__init__(config)
         self.nn = nn.Sequential(
-            *self.linear_input_layer(config.num_inputs, config.fc1_dims),
-            nn.Linear(config.fc1_dims, config.fc2_dims),
-            nn.ReLU(),
-            nn.Linear(config.fc2_dims, config.num_outputs),
+            *self.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *self.linear_hidden_layers(config.hidden_layer_sizes),
+            nn.Linear(config.hidden_layer_sizes[-1], config.num_outputs),
             nn.Softmax(dim=-1),
         )
         self.optimizer = optim.Adam(self.parameters(), lr=config.alpha)
@@ -53,10 +59,9 @@ class CriticNetwork(BaseNetwork):
     ) -> None:
         super().__init__(config)
         self.nn = nn.Sequential(
-            *self.linear_input_layer(config.num_inputs, config.fc1_dims),
-            nn.Linear(config.fc1_dims, config.fc2_dims),
-            nn.ReLU(),
-            nn.Linear(config.fc2_dims, 1),
+            *self.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *self.linear_hidden_layers(config.hidden_layer_sizes),
+            nn.Linear(config.hidden_layer_sizes[-1], 1),
         )
         self.optimizer = optim.Adam(self.parameters(), lr=config.alpha)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

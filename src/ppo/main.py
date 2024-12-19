@@ -19,15 +19,13 @@ if __name__ == "__main__":
     actor_config = ActorNetworkType(
         alpha=3e-4,
         num_inputs=num_inputs,
-        fc1_dims=256,
-        fc2_dims=256,
+        hidden_layer_sizes=[256, 256],
         num_outputs=num_actions,
     )
     critic_config = CriticNetworkType(
         alpha=3e-4,
         num_inputs=num_inputs,
-        fc1_dims=256,
-        fc2_dims=256,
+        hidden_layer_sizes=[256, 256],
     )
     agent = Agent(agent_config, actor_config, critic_config)
     simulation.run(agent)
