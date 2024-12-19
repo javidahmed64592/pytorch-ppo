@@ -3,6 +3,7 @@ import logging
 import gymnasium as gym
 import numpy as np
 import torch
+from numpy.typing import NDArray
 
 from ppo.agent import Agent
 
@@ -17,11 +18,11 @@ class Simulation:
         self.max_steps = max_steps
         self.timesteps = 0
 
-    def reset(self) -> list[int]:
+    def reset(self) -> NDArray:
         observation, _ = self.env.reset()
         return observation
 
-    def step(self, action: torch.Tensor) -> tuple[float, float, bool]:
+    def step(self, action: torch.Tensor) -> tuple[NDArray, float, bool, bool]:
         next_observation, reward, done, truncated, _ = self.env.step(action)
         return next_observation, reward, done, truncated
 
