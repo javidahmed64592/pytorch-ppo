@@ -39,15 +39,15 @@ class BaseNetwork(nn.Module):
         return layers
 
     @staticmethod
-    def linear_output_layer(num_inputs: int, num_outputs: int) -> nn.Linear:
-        return nn.Linear(num_inputs, num_outputs)
+    def linear_output_layer(num_inputs: int, num_outputs: int) -> tuple[nn.Linear]:
+        return [nn.Linear(num_inputs, num_outputs)]
 
     @staticmethod
-    def softmax_output_layer(num_inputs: int, num_outputs: int) -> nn.Linear:
-        return (
+    def softmax_output_layer(num_inputs: int, num_outputs: int) -> tuple[nn.Linear, nn.Softmax]:
+        return [
             nn.Linear(num_inputs, num_outputs),
             nn.Softmax(dim=-1),
-        )
+        ]
 
     @staticmethod
     def convolutional_layers(num_inputs: int) -> list[nn.Conv2d]:
@@ -71,10 +71,14 @@ class ActorNetwork(BaseNetwork):
 
     @classmethod
     def from_config(cls, config: ActorNetworkType) -> ActorNetwork:
+        input_layers = cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0])
+        hidden_layers = cls.linear_hidden_layers(config.hidden_layer_sizes)
+        output_layer = cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs)
+
         neural_network = nn.Sequential(
-            *cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
-            *cls.linear_hidden_layers(config.hidden_layer_sizes),
-            *cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs),
+            *input_layers,
+            *hidden_layers,
+            *output_layer,
         )
         return cls(config, neural_network)
 
@@ -106,10 +110,14 @@ class CriticNetwork(BaseNetwork):
 
     @classmethod
     def from_config(cls, config: CriticNetworkType) -> CriticNetwork:
+        input_layers = cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0])
+        hidden_layers = cls.linear_hidden_layers(config.hidden_layer_sizes)
+        output_layer = cls.softmax_output_layer(config.hidden_layer_sizes[-1], 1)
+
         neural_network = nn.Sequential(
-            *cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
-            *cls.linear_hidden_layers(config.hidden_layer_sizes),
-            cls.linear_output_layer(config.hidden_layer_sizes[-1], 1),
+            *input_layers,
+            *hidden_layers,
+            *output_layer,
         )
         return cls(config, neural_network)
 
