@@ -24,11 +24,13 @@ if __name__ == "__main__":
         num_inputs=num_inputs,
         hidden_layer_sizes=[256, 256],
         num_outputs=num_actions,
+        input_shape=simulation.env.observation_space.shape,
     )
     critic_config = CriticNetworkType(
         alpha=3e-4,
         num_inputs=num_inputs,
         hidden_layer_sizes=[256, 256],
+        input_shape=simulation.env.observation_space.shape,
     )
     agent = Agent(agent_config, actor_config, critic_config)
     simulation.run(agent)

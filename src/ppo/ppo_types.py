@@ -6,6 +6,7 @@ class BaseNetworkType:
     alpha: float
     num_inputs: int
     hidden_layer_sizes: list[int]
+    input_shape: tuple[int, int, int] = (0, 0, 0)
 
     @property
     def models_dir(self) -> str:
@@ -18,7 +19,7 @@ class BaseNetworkType:
 
 @dataclass
 class ActorNetworkType(BaseNetworkType):
-    num_outputs: int
+    num_outputs: int = 0
 
     @property
     def name(self) -> str:
