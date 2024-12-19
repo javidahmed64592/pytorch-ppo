@@ -78,7 +78,7 @@ class Agent:
         self.critic.load_checkpoint()
 
     def choose_action(self, observation: list[float]) -> list[float]:
-        state = torch.tensor(observation).to(self.actor.device)
+        state = torch.tensor(observation, dtype=torch.float).to(self.actor.device)
         dist = self.actor(state)
         action = dist.sample()
         probs = dist.log_prob(action)

@@ -33,6 +33,16 @@ class BaseNetwork(nn.Module):
             layers.append(nn.ReLU())
         return layers
 
+    @staticmethod
+    def linear_output_layer(num_inputs: int, num_outputs: int) -> nn.Linear:
+        return nn.Linear(num_inputs, num_outputs)
+
+    @staticmethod
+    def softmax_output_layer(num_inputs: int, num_outputs: int) -> nn.Linear:
+        return (
+            nn.Linear(num_inputs, num_outputs),
+            nn.Softmax(dim=-1),
+        )
 
 class ActorNetwork(BaseNetwork):
     def __init__(self, config: ActorNetworkType, neural_network: nn.Sequential) -> None:
@@ -45,10 +55,9 @@ class ActorNetwork(BaseNetwork):
     @classmethod
     def from_config(cls, config: ActorNetworkType) -> ActorNetwork:
         neural_network = nn.Sequential(
-            *ActorNetwork.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
-            *ActorNetwork.linear_hidden_layers(config.hidden_layer_sizes),
-            nn.Linear(config.hidden_layer_sizes[-1], config.num_outputs),
-            nn.Softmax(dim=-1),
+            *cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *cls.linear_hidden_layers(config.hidden_layer_sizes),
+            *cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs),
         )
         return cls(config, neural_network)
 
@@ -72,9 +81,9 @@ class CriticNetwork(BaseNetwork):
     @classmethod
     def from_config(cls, config: CriticNetworkType) -> CriticNetwork:
         neural_network = nn.Sequential(
-            *CriticNetwork.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
-            *CriticNetwork.linear_hidden_layers(config.hidden_layer_sizes),
-            nn.Linear(config.hidden_layer_sizes[-1], 1),
+            *cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *cls.linear_hidden_layers(config.hidden_layer_sizes),
+            cls.linear_output_layer(config.hidden_layer_sizes[-1], 1),
         )
         return cls(config, neural_network)
 
