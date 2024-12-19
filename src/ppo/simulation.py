@@ -17,12 +17,16 @@ class Simulation:
         self.max_steps = max_steps
         self.timesteps = 0
 
+    def reset(self) -> list[int]:
+        observation, _ = self.env.reset()
+        return observation
+
     def step(self, action: torch.Tensor) -> tuple[float, float, bool]:
         next_observation, reward, done, truncated, _ = self.env.step(action)
         return next_observation, reward, done, truncated
 
     def game_loop(self, agent: Agent) -> None:
-        observation, _ = self.env.reset()
+        observation = self.reset()
         done = False
         truncated = False
         score = 0
