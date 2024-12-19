@@ -19,13 +19,15 @@ class BaseNetwork(nn.Module):
     def load_checkpoint(self) -> None:
         self.load_state_dict(torch.load(self.checkpoint_file))
 
+    def linear_input_layer(self, num_inputs: int, fc1_dims: int) -> tuple[nn.Linear, nn.ReLU]:
+        return nn.Linear(num_inputs, fc1_dims), nn.ReLU()
+
 
 class ActorNetwork(BaseNetwork):
     def __init__(self, config: ActorNetworkType) -> None:
         super().__init__(config)
         self.nn = nn.Sequential(
-            nn.Linear(config.num_inputs, config.fc1_dims),
-            nn.ReLU(),
+            *self.linear_input_layer(config.num_inputs, config.fc1_dims),
             nn.Linear(config.fc1_dims, config.fc2_dims),
             nn.ReLU(),
             nn.Linear(config.fc2_dims, config.num_outputs),
@@ -51,8 +53,7 @@ class CriticNetwork(BaseNetwork):
     ) -> None:
         super().__init__(config)
         self.nn = nn.Sequential(
-            nn.Linear(config.num_inputs, config.fc1_dims),
-            nn.ReLU(),
+            *self.linear_input_layer(config.num_inputs, config.fc1_dims),
             nn.Linear(config.fc1_dims, config.fc2_dims),
             nn.ReLU(),
             nn.Linear(config.fc2_dims, 1),
