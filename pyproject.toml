@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytorch-ppo"
-version = "1.0.0"
+version = "0.1.0"
 description = "Proximal policy optimisation using PyTorch in Python."
 readme = "README.md"
 requires-python = ">=3.12"
