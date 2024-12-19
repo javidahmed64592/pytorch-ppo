@@ -44,6 +44,18 @@ class BaseNetwork(nn.Module):
             nn.Softmax(dim=-1),
         )
 
+    @staticmethod
+    def convolutional_layers(num_inputs: int) -> list[nn.Conv2d]:
+        return [
+            nn.Conv2d(num_inputs, 32, 8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, 3, stride=1),
+            nn.ReLU(),
+        ]
+
+
 class ActorNetwork(BaseNetwork):
     def __init__(self, config: ActorNetworkType, neural_network: nn.Sequential) -> None:
         super().__init__(config)
@@ -56,6 +68,15 @@ class ActorNetwork(BaseNetwork):
     def from_config(cls, config: ActorNetworkType) -> ActorNetwork:
         neural_network = nn.Sequential(
             *cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *cls.linear_hidden_layers(config.hidden_layer_sizes),
+            *cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs),
+        )
+        return cls(config, neural_network)
+
+    @classmethod
+    def from_config_conv(cls, config: ActorNetworkType) -> ActorNetwork:
+        neural_network = nn.Sequential(
+            *cls.convolutional_layers(config.num_inputs),
             *cls.linear_hidden_layers(config.hidden_layer_sizes),
             *cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs),
         )
@@ -84,6 +105,15 @@ class CriticNetwork(BaseNetwork):
             *cls.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
             *cls.linear_hidden_layers(config.hidden_layer_sizes),
             cls.linear_output_layer(config.hidden_layer_sizes[-1], 1),
+        )
+        return cls(config, neural_network)
+
+    @classmethod
+    def from_config_conv(cls, config: CriticNetworkType) -> CriticNetwork:
+        neural_network = nn.Sequential(
+            *cls.convolutional_layers(config.num_inputs),
+            *cls.linear_hidden_layers(config.hidden_layer_sizes),
+            *cls.softmax_output_layer(config.hidden_layer_sizes[-1], 1),
         )
         return cls(config, neural_network)
 
