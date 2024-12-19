@@ -1,5 +1,6 @@
 import logging
 
+import ale_py
 import gymnasium as gym
 import numpy as np
 import torch
@@ -7,6 +8,7 @@ from numpy.typing import NDArray
 
 from ppo.agent import Agent
 
+gym.register_envs(ale_py)
 logging.basicConfig(format="[%(asctime)s] - %(message)s", datefmt="%d/%m/%Y | %H:%M", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
