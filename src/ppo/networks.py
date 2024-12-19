@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import torch
@@ -19,10 +21,12 @@ class BaseNetwork(nn.Module):
     def load_checkpoint(self) -> None:
         self.load_state_dict(torch.load(self.checkpoint_file))
 
-    def linear_input_layer(self, num_inputs: int, fc1_dims: int) -> tuple[nn.Linear, nn.ReLU]:
+    @staticmethod
+    def linear_input_layer(num_inputs: int, fc1_dims: int) -> tuple[nn.Linear, nn.ReLU]:
         return nn.Linear(num_inputs, fc1_dims), nn.ReLU()
 
-    def linear_hidden_layers(self, hidden_layer_sizes: list[int]) -> list[nn.Linear]:
+    @staticmethod
+    def linear_hidden_layers(hidden_layer_sizes: list[int]) -> list[nn.Linear]:
         layers = []
         for i in range(len(hidden_layer_sizes) - 1):
             layers.append(nn.Linear(hidden_layer_sizes[i], hidden_layer_sizes[i + 1]))
@@ -31,17 +35,22 @@ class BaseNetwork(nn.Module):
 
 
 class ActorNetwork(BaseNetwork):
-    def __init__(self, config: ActorNetworkType) -> None:
+    def __init__(self, config: ActorNetworkType, neural_network: nn.Sequential) -> None:
         super().__init__(config)
-        self.nn = nn.Sequential(
-            *self.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
-            *self.linear_hidden_layers(config.hidden_layer_sizes),
-            nn.Linear(config.hidden_layer_sizes[-1], config.num_outputs),
-            nn.Softmax(dim=-1),
-        )
+        self.nn = neural_network
         self.optimizer = optim.Adam(self.parameters(), lr=config.alpha)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
+
+    @classmethod
+    def from_config(cls, config: ActorNetworkType) -> ActorNetwork:
+        neural_network = nn.Sequential(
+            *ActorNetwork.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *ActorNetwork.linear_hidden_layers(config.hidden_layer_sizes),
+            nn.Linear(config.hidden_layer_sizes[-1], config.num_outputs),
+            nn.Softmax(dim=-1),
+        )
+        return cls(config, neural_network)
 
     def forward(self, state: list[float]) -> Categorical:
         dist = self.nn(state)
@@ -53,19 +62,21 @@ class ActorNetwork(BaseNetwork):
 
 
 class CriticNetwork(BaseNetwork):
-    def __init__(
-        self,
-        config: CriticNetworkType,
-    ) -> None:
+    def __init__(self, config: CriticNetworkType, neural_network: nn.Sequential) -> None:
         super().__init__(config)
-        self.nn = nn.Sequential(
-            *self.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
-            *self.linear_hidden_layers(config.hidden_layer_sizes),
-            nn.Linear(config.hidden_layer_sizes[-1], 1),
-        )
+        self.nn = neural_network
         self.optimizer = optim.Adam(self.parameters(), lr=config.alpha)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
+
+    @classmethod
+    def from_config(cls, config: CriticNetworkType) -> CriticNetwork:
+        neural_network = nn.Sequential(
+            *CriticNetwork.linear_input_layer(config.num_inputs, config.hidden_layer_sizes[0]),
+            *CriticNetwork.linear_hidden_layers(config.hidden_layer_sizes),
+            nn.Linear(config.hidden_layer_sizes[-1], 1),
+        )
+        return cls(config, neural_network)
 
     def forward(self, state: list[float]) -> Categorical:
         return self.nn(state)

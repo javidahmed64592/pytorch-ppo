@@ -65,8 +65,8 @@ class Agent:
         self.batch_size = config.batch_size
         self.n_epochs = config.n_epochs
 
-        self.actor = ActorNetwork(actor_config)
-        self.critic = CriticNetwork(critic_config)
+        self.actor = ActorNetwork.from_config(actor_config)
+        self.critic = CriticNetwork.from_config(critic_config)
         self.memory = PPOMemory(config.batch_size)
 
     def save_models(self) -> None:
