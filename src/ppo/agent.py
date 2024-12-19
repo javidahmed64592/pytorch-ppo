@@ -101,13 +101,13 @@ class Agent:
                 batches,
             ) = self.memory.generate_batches()
             advantage = self.calculate_advantage(reward_arr, vals_arr, done_arr)
-            advantage = torch.tensor(advantage, dtype=torch.float).to(self.actor.device)
-            values = torch.tensor(vals_arr, dtype=torch.float).to(self.actor.device)
+            advantage = self.actor.to_device(advantage)
+            values = self.actor.to_device(vals_arr)
 
             for batch in batches:
-                states = torch.tensor(state_arr[batch], dtype=torch.float).to(self.actor.device)
-                actions = torch.tensor(action_arr[batch], dtype=torch.float).to(self.actor.device)
-                old_probs = torch.tensor(old_probs_arr[batch], dtype=torch.float).to(self.actor.device)
+                states = self.actor.to_device(state_arr[batch])
+                actions = self.actor.to_device(action_arr[batch])
+                old_probs = self.actor.to_device(old_probs_arr[batch])
                 returns = advantage[batch] + values[batch]
 
                 prob_ratio = self.calculate_prob_ratio(states, actions, old_probs)

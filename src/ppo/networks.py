@@ -5,6 +5,7 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from numpy.typing import NDArray
 from torch.distributions.categorical import Categorical
 
 from ppo.ppo_types import ActorNetworkType, BaseNetworkType, CriticNetworkType
@@ -14,12 +15,16 @@ class BaseNetwork(nn.Module):
     def __init__(self, config: BaseNetworkType) -> None:
         super().__init__()
         self.checkpoint_file = Path(config.models_dir) / f"{config.name}_torch_ppo"
+        self.device: torch.device
 
     def save_checkpoint(self) -> None:
         torch.save(self.state_dict(), self.checkpoint_file)
 
     def load_checkpoint(self) -> None:
         self.load_state_dict(torch.load(self.checkpoint_file))
+
+    def to_device(self, array: NDArray) -> torch.Tensor:
+        return torch.tensor(array, dtype=torch.float).to(self.device)
 
     @staticmethod
     def linear_input_layer(num_inputs: int, fc1_dims: int) -> tuple[nn.Linear, nn.ReLU]:
