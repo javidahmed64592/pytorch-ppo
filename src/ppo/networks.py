@@ -24,7 +24,7 @@ class ActorNetwork(BaseNetwork):
     def __init__(self, config: ActorNetworkType) -> None:
         super().__init__(config)
         self.nn = nn.Sequential(
-            nn.Linear(*config.num_inputs, config.fc1_dims),
+            nn.Linear(config.num_inputs, config.fc1_dims),
             nn.ReLU(),
             nn.Linear(config.fc1_dims, config.fc2_dims),
             nn.ReLU(),
@@ -51,7 +51,7 @@ class CriticNetwork(BaseNetwork):
     ) -> None:
         super().__init__(config)
         self.nn = nn.Sequential(
-            nn.Linear(*config.num_inputs, config.fc1_dims),
+            nn.Linear(config.num_inputs, config.fc1_dims),
             nn.ReLU(),
             nn.Linear(config.fc1_dims, config.fc2_dims),
             nn.ReLU(),

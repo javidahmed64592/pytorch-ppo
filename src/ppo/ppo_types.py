@@ -4,7 +4,7 @@ from pydantic.dataclasses import dataclass
 @dataclass
 class BaseNetworkType:
     alpha: float
-    num_inputs: tuple[int]
+    num_inputs: int
     fc1_dims: int
     fc2_dims: int
 
