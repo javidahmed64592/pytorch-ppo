@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -50,15 +51,22 @@ class BaseNetwork(nn.Module):
         ]
 
     @staticmethod
-    def convolutional_layers(num_inputs: int) -> list[nn.Conv2d]:
+    def convolutional_layers(input_shape: tuple[int, int, int]) -> list[nn.Module]:
         return [
-            nn.Conv2d(num_inputs, 32, 8, stride=4),
+            nn.Conv2d(in_channels=input_shape[2], out_channels=32, kernel_size=8, stride=4),
             nn.ReLU(),
-            nn.Conv2d(32, 64, 4, stride=2),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
             nn.ReLU(),
-            nn.Conv2d(64, 128, 3, stride=1),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
             nn.ReLU(),
+            nn.Flatten(),
         ]
+
+    @staticmethod
+    def calculate_conv_output_dim(input_shape: tuple[int, int, int]) -> int:
+        dummy_input = torch.zeros(1, input_shape[2], input_shape[0], input_shape[1])
+        dummy_output = nn.Sequential(*BaseNetwork.convolutional_layers(input_shape))(dummy_input)
+        return int(np.prod(dummy_output.size()))
 
 
 class ActorNetwork(BaseNetwork):
@@ -84,10 +92,20 @@ class ActorNetwork(BaseNetwork):
 
     @classmethod
     def from_config_conv(cls, config: ActorNetworkType) -> ActorNetwork:
+        conv_layers = cls.convolutional_layers(config.input_shape)
+        fc_input_dim = cls.calculate_conv_output_dim(config.input_shape)
+        linear_layer = [
+            nn.Linear(fc_input_dim, config.hidden_layer_sizes[0]),
+            nn.ReLU(),
+        ]
+        hidden_layers = cls.linear_hidden_layers(config.hidden_layer_sizes)
+        output_layer = cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs)
+
         neural_network = nn.Sequential(
-            *cls.convolutional_layers(config.num_inputs),
-            *cls.linear_hidden_layers(config.hidden_layer_sizes),
-            *cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs),
+            *conv_layers,
+            *linear_layer,
+            *hidden_layers,
+            *output_layer,
         )
         return cls(config, neural_network)
 
@@ -123,10 +141,20 @@ class CriticNetwork(BaseNetwork):
 
     @classmethod
     def from_config_conv(cls, config: CriticNetworkType) -> CriticNetwork:
+        conv_layers = cls.convolutional_layers(config.input_shape)
+        fc_input_dim = cls.calculate_conv_output_dim(config.input_shape)
+        linear_layer = [
+            nn.Linear(fc_input_dim, config.hidden_layer_sizes[0]),
+            nn.ReLU(),
+        ]
+        hidden_layers = cls.linear_hidden_layers(config.hidden_layer_sizes)
+        output_layer = cls.linear_output_layer(config.hidden_layer_sizes[-1], 1)
+
         neural_network = nn.Sequential(
-            *cls.convolutional_layers(config.num_inputs),
-            *cls.linear_hidden_layers(config.hidden_layer_sizes),
-            *cls.softmax_output_layer(config.hidden_layer_sizes[-1], 1),
+            *conv_layers,
+            *linear_layer,
+            *hidden_layers,
+            *output_layer,
         )
         return cls(config, neural_network)
 
@@ -134,6 +162,6 @@ class CriticNetwork(BaseNetwork):
         return self.nn(state)
 
     def calculate_loss(self, states: torch.Tensor, returns: torch.Tensor) -> torch.Tensor:
-        value = torch.squeeze(self(states))
+        value = torch.squeeze(self(states.permute(0, 3, 1, 2)))
         loss = (returns - value) ** 2
         return loss.mean()

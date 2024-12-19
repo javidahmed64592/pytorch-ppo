@@ -65,8 +65,8 @@ class Agent:
         self.batch_size = config.batch_size
         self.n_epochs = config.n_epochs
 
-        self.actor = ActorNetwork.from_config(actor_config)
-        self.critic = CriticNetwork.from_config(critic_config)
+        self.actor = ActorNetwork.from_config_conv(actor_config)
+        self.critic = CriticNetwork.from_config_conv(critic_config)
         self.memory = PPOMemory(config.batch_size)
 
     def save_models(self) -> None:
@@ -78,7 +78,7 @@ class Agent:
         self.critic.load_checkpoint()
 
     def choose_action(self, observation: list[float]) -> list[float]:
-        state = torch.tensor(observation, dtype=torch.float).to(self.actor.device)
+        state = self.actor.to_device(observation).permute(2, 0, 1).unsqueeze(0)
         dist = self.actor(state)
         action = dist.sample()
         probs = dist.log_prob(action)
@@ -132,10 +132,9 @@ class Agent:
 
         return advantage
 
-    def calculate_prob_ratio(
-        self, states: torch.Tensor, actions: torch.Tensor, old_probs: torch.Tensor
-    ) -> torch.Tensor:
-        dist = self.actor(states)
+    def calculate_prob_ratio(self, state: torch.Tensor, actions: torch.Tensor, old_probs: torch.Tensor) -> torch.Tensor:
+        state = state.permute(0, 3, 1, 2)
+        dist = self.actor(state)
         new_probs = dist.log_prob(actions)
         return new_probs.exp() / old_probs.exp()
 
