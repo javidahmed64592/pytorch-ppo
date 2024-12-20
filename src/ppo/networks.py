@@ -29,14 +29,15 @@ class BaseNetwork(nn.Module):
 
     @staticmethod
     def linear_input_layer(num_inputs: int, fc1_dims: int) -> tuple[nn.Linear, nn.ReLU]:
-        return nn.Linear(num_inputs, fc1_dims), nn.ReLU()
+        return nn.Linear(num_inputs, fc1_dims), nn.ReLU(inplace=True)
 
     @staticmethod
     def linear_hidden_layers(hidden_layer_sizes: list[int]) -> list[nn.Linear]:
         layers = []
         for i in range(len(hidden_layer_sizes) - 1):
             layers.append(nn.Linear(hidden_layer_sizes[i], hidden_layer_sizes[i + 1]))
-            layers.append(nn.ReLU())
+            layers.append(nn.ReLU(inplace=True))
+            layers.append(nn.Dropout(0.2))
         return layers
 
     @staticmethod
@@ -53,13 +54,22 @@ class BaseNetwork(nn.Module):
     @staticmethod
     def convolutional_layers(input_shape: tuple[int, int, int]) -> list[nn.Module]:
         return [
-            nn.Conv2d(in_channels=input_shape[2], out_channels=32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
-            nn.ReLU(),
+            nn.Conv2d(in_channels=input_shape[2], out_channels=64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.AdaptiveAvgPool2d((6, 6)),
             nn.Flatten(),
+            nn.Dropout(0.2),
         ]
 
     @staticmethod
@@ -96,7 +106,7 @@ class ActorNetwork(BaseNetwork):
         fc_input_dim = cls.calculate_conv_output_dim(config.input_shape)
         linear_layer = [
             nn.Linear(fc_input_dim, config.hidden_layer_sizes[0]),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
         ]
         hidden_layers = cls.linear_hidden_layers(config.hidden_layer_sizes)
         output_layer = cls.softmax_output_layer(config.hidden_layer_sizes[-1], config.num_outputs)
@@ -107,6 +117,7 @@ class ActorNetwork(BaseNetwork):
             *hidden_layers,
             *output_layer,
         )
+        print(neural_network)
         return cls(config, neural_network)
 
     def forward(self, state: list[float]) -> Categorical:
@@ -145,7 +156,7 @@ class CriticNetwork(BaseNetwork):
         fc_input_dim = cls.calculate_conv_output_dim(config.input_shape)
         linear_layer = [
             nn.Linear(fc_input_dim, config.hidden_layer_sizes[0]),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
         ]
         hidden_layers = cls.linear_hidden_layers(config.hidden_layer_sizes)
         output_layer = cls.linear_output_layer(config.hidden_layer_sizes[-1], 1)
@@ -156,6 +167,7 @@ class CriticNetwork(BaseNetwork):
             *hidden_layers,
             *output_layer,
         )
+        print(neural_network)
         return cls(config, neural_network)
 
     def forward(self, state: list[float]) -> Categorical:
