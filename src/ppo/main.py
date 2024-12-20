@@ -17,20 +17,20 @@ if __name__ == "__main__":
         gae_lambda=0.95,
         policy_clip=0.2,
         batch_size=5,
-        n_epochs=1,
+        n_epochs=3,
     )
     actor_config = ActorNetworkType(
         alpha=3e-4,
         num_inputs=num_inputs,
-        hidden_layer_sizes=[256, 256],
+        hidden_layer_sizes=[128, 128],
         num_outputs=num_actions,
-        input_shape=(64, 64, 3),
+        input_shape=simulation.resize_shape,
     )
     critic_config = CriticNetworkType(
-        alpha=3e-4,
-        num_inputs=num_inputs,
-        hidden_layer_sizes=[256, 256],
-        input_shape=(64, 64, 3),
+        alpha=actor_config.alpha,
+        num_inputs=actor_config.num_inputs,
+        hidden_layer_sizes=actor_config.hidden_layer_sizes,
+        input_shape=actor_config.input_shape,
     )
     agent = Agent(agent_config, actor_config, critic_config)
     simulation.run(agent)
