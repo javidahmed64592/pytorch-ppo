@@ -22,7 +22,7 @@ if __name__ == "__main__":
     actor_config = ActorNetworkType(
         alpha=3e-4,
         num_inputs=num_inputs,
-        hidden_layer_sizes=[256, 128, 64],
+        hidden_layer_sizes=[128, 128],
         num_outputs=num_actions,
         input_shape=simulation.resize_shape,
     )
