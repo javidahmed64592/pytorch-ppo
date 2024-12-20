@@ -20,13 +20,17 @@ class Simulation:
         self.max_steps = max_steps
         self.timesteps = 0
 
+    @staticmethod
+    def preprocess(observation: NDArray) -> NDArray:
+        return observation / 255
+
     def reset(self) -> NDArray:
         observation, _ = self.env.reset()
-        return observation
+        return Simulation.preprocess(observation)
 
     def step(self, action: torch.Tensor) -> tuple[NDArray, float, bool, bool]:
         next_observation, reward, done, truncated, _ = self.env.step(action)
-        return next_observation, reward, done, truncated
+        return Simulation.preprocess(next_observation), reward, done, truncated
 
     def game_loop(self, agent: Agent) -> None:
         observation = self.reset()
