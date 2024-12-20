@@ -5,7 +5,7 @@ from ppo.ppo_types import ActorNetworkType, AgentType, CriticNetworkType
 from ppo.simulation import Simulation
 
 if __name__ == "__main__":
-    simulation = Simulation("ALE/Breakout-v5", n_games=100, max_steps=100, resize_shape=(64, 64, 3))
+    simulation = Simulation("ALE/MsPacman-v5", n_games=100, max_steps=100, resize_shape=(64, 64, 3))
     try:
         num_inputs = int(np.prod(simulation.env.observation_space.shape))
     except TypeError:
@@ -17,20 +17,20 @@ if __name__ == "__main__":
         gae_lambda=0.95,
         policy_clip=0.2,
         batch_size=5,
-        n_epochs=1,
+        n_epochs=3,
     )
     actor_config = ActorNetworkType(
         alpha=3e-4,
         num_inputs=num_inputs,
-        hidden_layer_sizes=[256, 256],
+        hidden_layer_sizes=[256, 128, 64],
         num_outputs=num_actions,
-        input_shape=(64, 64, 3),
+        input_shape=simulation.resize_shape,
     )
     critic_config = CriticNetworkType(
-        alpha=3e-4,
-        num_inputs=num_inputs,
-        hidden_layer_sizes=[256, 256],
-        input_shape=(64, 64, 3),
+        alpha=actor_config.alpha,
+        num_inputs=actor_config.num_inputs,
+        hidden_layer_sizes=actor_config.hidden_layer_sizes,
+        input_shape=actor_config.input_shape,
     )
     agent = Agent(agent_config, actor_config, critic_config)
     simulation.run(agent)
