@@ -14,23 +14,24 @@ logger = logging.getLogger(__name__)
 
 
 class Simulation:
-    def __init__(self, id: str, n_games: int, max_steps: int) -> None:
+    def __init__(self, id: str, n_games: int, max_steps: int, resize_shape: tuple[int, int, int]) -> None:
         self.env = gym.make(id, render_mode="human")
         self.n_games = n_games
         self.max_steps = max_steps
         self.timesteps = 0
+        self.resize_shape = resize_shape
 
-    @staticmethod
-    def preprocess(observation: NDArray) -> NDArray:
+    def preprocess(self, observation: NDArray) -> NDArray:
+        observation = np.resize(observation, self.resize_shape)
         return observation / 255
 
     def reset(self) -> NDArray:
         observation, _ = self.env.reset()
-        return Simulation.preprocess(observation)
+        return self.preprocess(observation)
 
     def step(self, action: torch.Tensor) -> tuple[NDArray, float, bool, bool]:
         next_observation, reward, done, truncated, _ = self.env.step(action)
-        return Simulation.preprocess(next_observation), reward, done, truncated
+        return self.preprocess(next_observation), reward, done, truncated
 
     def game_loop(self, agent: Agent) -> None:
         observation = self.reset()
